@@ -5,10 +5,18 @@
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <UserSecretsId>585afefb-bf46-476b-9a00-5282cdf78297</UserSecretsId>
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.4"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.4"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\DexWallet.Common\DexWallet.Common.csproj"/>
     </ItemGroup>
 
 </Project>
