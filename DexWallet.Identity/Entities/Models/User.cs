@@ -1,17 +1,21 @@
 using System.Text.Json.Serialization;
+using Amazon.DynamoDBv2.DataModel;
 
 namespace DexWallet.Identity.Entities.Models;
 
+[DynamoDBTable("DexWallet.Identity.User", true)]
 public class User
 {
-    public int Id { get; set; }
-    public string FirstName { get; init; } = null!;
-    public string LastName { get; init; } = null!;
+    [DynamoDBHashKey]
     public string Username { get; init; } = null!;
 
-    [JsonIgnore]
-    public string PasswordHash { get; init; } = null!;
+    [DynamoDBProperty]
+    public string FirstName { get; init; } = null!;
+
+    [DynamoDBProperty]
+    public string LastName { get; init; } = null!;
 
     [JsonIgnore]
-    public List<RefreshToken> RefreshTokens { get; set; } = null!;
+    [DynamoDBProperty]
+    public string PasswordHash { get; init; } = null!;
 }

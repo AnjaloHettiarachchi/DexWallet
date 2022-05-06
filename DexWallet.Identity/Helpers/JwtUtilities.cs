@@ -2,6 +2,8 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
 using DexWallet.Identity.Contracts;
 using DexWallet.Identity.Entities.Models;
 using Microsoft.Extensions.Options;
@@ -12,9 +14,9 @@ namespace DexWallet.Identity.Helpers;
 public class JwtUtilities : IJwtUtilities
 {
     private readonly AppSettings _appSettings;
-    private readonly DataContext _dataContext;
+    private readonly IDynamoDBContext _dataContext;
 
-    public JwtUtilities(DataContext dataContext, IOptions<AppSettings> appSettings)
+    public JwtUtilities(IDynamoDBContext dataContext, IOptions<AppSettings> appSettings)
     {
         _dataContext = dataContext;
         _appSettings = appSettings.Value;
@@ -31,7 +33,7 @@ public class JwtUtilities : IJwtUtilities
         var key = Encoding.ASCII.GetBytes(_appSettings.SigningKey);
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(new[] { new Claim("user-id", user.Id.ToString()) }),
+            Subject = new ClaimsIdentity(new[] { new Claim("username", user.Username) }),
             Expires = DateTime.UtcNow.AddMinutes(15),
             SigningCredentials =
                 new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
@@ -41,7 +43,7 @@ public class JwtUtilities : IJwtUtilities
         return tokenHandler.WriteToken(token);
     }
 
-    public int? ValidateToken(string token)
+    public string? ValidateToken(string token)
     {
         if (string.IsNullOrEmpty(token)) return null;
 
@@ -60,9 +62,9 @@ public class JwtUtilities : IJwtUtilities
             }, out var validatedToken);
 
             var jwtToken = (JwtSecurityToken)validatedToken;
-            var userId = int.Parse(jwtToken.Claims.First(x => x.Type == "user-id").Value);
+            var username = jwtToken.Claims.First(x => x.Type == "username").Value;
 
-            return userId;
+            return username;
         }
         catch
         {
@@ -70,27 +72,18 @@ public class JwtUtilities : IJwtUtilities
         }
     }
 
-    public RefreshToken GenerateRefreshToken(string ipAddress)
-    {
-        var refreshToken = new RefreshToken
-        {
-            Token = GetUniqueToken(),
-            Expires = DateTime.UtcNow.AddDays(7),
-            Created = DateTime.UtcNow,
-            CreatedByIp = ipAddress
-        };
-
-        return refreshToken;
-    }
-
-    private string GetUniqueToken()
+    private async Task<string> GetUniqueTokenAsync(bool hasPreviousTokens)
     {
         while (true)
         {
             var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            var tokenIsUnique = !_dataContext.Users.Any(u => u.RefreshTokens.Any(t => t.Token == token));
+            if (!hasPreviousTokens) return token;
 
-            if (!tokenIsUnique) continue;
+            var usersWithCurrentToken = await _dataContext
+                .ScanAsync<User>(new List<ScanCondition> { new("refreshTokens", ScanOperator.Contains, token) })
+                .GetRemainingAsync();
+
+            if (usersWithCurrentToken.Any()) continue;
             return token;
         }
     }

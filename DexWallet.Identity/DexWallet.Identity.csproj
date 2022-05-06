@@ -9,9 +9,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.7.3.29"/>
+        <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.2"/>
         <PackageReference Include="BCrypt.Net-Next" Version="4.0.3"/>
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.4"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.4"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3"/>
     </ItemGroup>
 

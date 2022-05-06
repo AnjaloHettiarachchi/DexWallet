@@ -1,12 +1,13 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
 using DexWallet.Common.Middlewares;
 using DexWallet.Identity.Contracts;
 using DexWallet.Identity.Entities.Models;
 using DexWallet.Identity.Helpers;
 using DexWallet.Identity.Middlewares;
 using DexWallet.Identity.Services;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to DI container
@@ -18,9 +19,6 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddEndpointsApiExplorer();
     services.AddSwaggerGen();
 
-    // EF Core Database Context
-    services.AddDbContext<DataContext>(optionsBuilder => { optionsBuilder.UseInMemoryDatabase("TestDB"); });
-
     // JSON default options
     services.AddControllers().AddJsonOptions(
         options =>
@@ -29,6 +27,14 @@ var builder = WebApplication.CreateBuilder(args);
             options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         }
     );
+
+    // AWS Profile from Configuration providers
+    var awsOptions = builder.Configuration.GetAWSOptions();
+    services.AddDefaultAWSOptions(awsOptions);
+
+    // AWS Services
+    services.AddAWSService<IAmazonDynamoDB>();
+    services.AddScoped<IDynamoDBContext, DynamoDBContext>();
 
     // Configure strongly typed Configuration object
     services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
@@ -43,7 +49,7 @@ var app = builder.Build();
 // Migrate mock user to Database
 using (var scope = app.Services.CreateScope())
 {
-    var context = scope.ServiceProvider.GetRequiredService<DataContext>();
+    var context = scope.ServiceProvider.GetRequiredService<IDynamoDBContext>();
     var testUser = new User
     {
         FirstName = "John",
@@ -51,8 +57,10 @@ using (var scope = app.Services.CreateScope())
         Username = "john.doe@example.com",
         PasswordHash = BCrypt.Net.BCrypt.HashPassword("john123")
     };
-    context.Users.Add(testUser);
-    context.SaveChanges();
+
+    var testUserInDb = context.LoadAsync<User>(testUser.Username).Result;
+
+    if (testUserInDb == null) context.SaveAsync(testUser);
 }
 
 // Configure the HTTP request pipeline.

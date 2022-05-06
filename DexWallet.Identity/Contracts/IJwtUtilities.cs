@@ -5,6 +5,5 @@ namespace DexWallet.Identity.Contracts;
 public interface IJwtUtilities
 {
     string GenerateToken(User user);
-    int? ValidateToken(string token);
-    RefreshToken GenerateRefreshToken(string ipAddress);
+    string? ValidateToken(string token);
 }

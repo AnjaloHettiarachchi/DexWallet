@@ -1,25 +1,40 @@
-using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using Microsoft.EntityFrameworkCore;
+// using Amazon.DynamoDBv2.DataModel;
+//
+// namespace DexWallet.Identity.Entities.Models;
+//
+// [DynamoDBTable("DexWallet.Identity.RefreshToken")]
+// public class RefreshToken
+// {
+//     [DynamoDBHashKey]
+//     public string Token { get; init; } = null!;
+//
+//     [DynamoDBProperty]
+//     public DateTime Expires { get; init; }
+//
+//     [DynamoDBProperty]
+//     public DateTime Created { get; init; }
+//
+//     [DynamoDBProperty]
+//     public string CreatedByIp { get; init; } = null!;
+//
+//     [DynamoDBProperty]
+//     public DateTime? Revoked { get; set; }
+//
+//     [DynamoDBProperty]
+//     public string? RevokedByIp { get; set; }
+//
+//     [DynamoDBProperty]
+//     public string? ReplacedByToken { get; set; }
+//
+//     [DynamoDBProperty]
+//     public string? ReasonRevoked { get; set; }
+//
+//     private bool IsExpired => DateTime.UtcNow >= Expires;
+//
+//     [DynamoDBProperty]
+//     private bool IsRevoked => Revoked.HasValue;
+//
+//     [DynamoDBProperty]
+//     public bool IsActive => !IsRevoked && !IsExpired;
+// }
 
-namespace DexWallet.Identity.Entities.Models;
-
-[Owned]
-public class RefreshToken
-{
-    [Key]
-    [JsonIgnore]
-    public int Id { get; set; }
-
-    public string Token { get; init; } = null!;
-    public DateTime Expires { get; init; }
-    public DateTime Created { get; init; }
-    public string CreatedByIp { get; init; } = null!;
-    public DateTime? Revoked { get; set; }
-    public string? RevokedByIp { get; set; }
-    public string? ReplacedByToken { get; set; }
-    public string? ReasonRevoked { get; set; }
-    private bool IsExpired => DateTime.UtcNow >= Expires;
-    public bool IsRevoked => Revoked.HasValue;
-    public bool IsActive => !IsRevoked && !IsExpired;
-}
