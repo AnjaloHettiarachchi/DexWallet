@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
+using DexWallet.Common.Attributes;
 using DexWallet.Common.Middlewares;
 using DexWallet.Identity.Contracts;
 using DexWallet.Identity.Entities.Models;

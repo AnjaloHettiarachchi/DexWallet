@@ -1,7 +1,6 @@
-using DexWallet.Identity.Entities.Models;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace DexWallet.Identity.Helpers;
+namespace DexWallet.Common.Attributes;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 public class AuthorizeAttribute : Attribute, IAuthorizationFilter
@@ -13,7 +12,7 @@ public class AuthorizeAttribute : Attribute, IAuthorizationFilter
         if (isAllowAnonymous) return;
 
         // Authorization
-        if (context.HttpContext.Items["User"] is not User)
+        if (context.HttpContext.Items["User"] is null)
             throw new UnauthorizedAccessException("Unauthorized");
     }
 }

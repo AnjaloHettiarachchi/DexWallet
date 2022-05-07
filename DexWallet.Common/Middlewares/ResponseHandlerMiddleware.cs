@@ -32,7 +32,7 @@ public class ResponseHandlerMiddleware
             var body = await bufferReader.ReadToEndAsync();
 
 
-            var respObj = JsonSerializer.Deserialize<object>(body);
+            var respObj = string.IsNullOrEmpty(body) ? body : JsonSerializer.Deserialize<object>(body);
             jsonResponse = JsonSerializer.Serialize(new AppResponse(respObj), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         }
         catch (Exception exception)

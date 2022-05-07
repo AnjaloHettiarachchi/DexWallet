@@ -1,9 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 using Amazon.DynamoDBv2.DataModel;
-using Amazon.DynamoDBv2.DocumentModel;
+using DexWallet.Common.Attributes;
 using DexWallet.Identity.Contracts;
 using DexWallet.Identity.Entities.Models;
 using Microsoft.Extensions.Options;
@@ -69,22 +68,6 @@ public class JwtUtilities : IJwtUtilities
         catch
         {
             return null;
-        }
-    }
-
-    private async Task<string> GetUniqueTokenAsync(bool hasPreviousTokens)
-    {
-        while (true)
-        {
-            var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
-            if (!hasPreviousTokens) return token;
-
-            var usersWithCurrentToken = await _dataContext
-                .ScanAsync<User>(new List<ScanCondition> { new("refreshTokens", ScanOperator.Contains, token) })
-                .GetRemainingAsync();
-
-            if (usersWithCurrentToken.Any()) continue;
-            return token;
         }
     }
 }

@@ -1,13 +1,13 @@
+using DexWallet.Common.Attributes;
 using DexWallet.Identity.Contracts;
 using DexWallet.Identity.Entities.DTOs;
-using DexWallet.Identity.Helpers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DexWallet.Identity.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("api/v1/users")]
+[Route("/identity")]
 public class UsersController : ControllerBase
 {
     private readonly IUserService _userService;
@@ -37,6 +37,12 @@ public class UsersController : ControllerBase
     {
         var user = await _userService.GetByUsernameAsync(username);
         return Ok(user);
+    }
+
+    [HttpGet("validate")]
+    public IActionResult Validate()
+    {
+        return Ok(HttpContext.Items["User"]);
     }
 
     private string CurrentIpAddress()
