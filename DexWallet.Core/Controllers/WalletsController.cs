@@ -8,7 +8,7 @@ namespace DexWallet.Core.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("/wallets")]
+[Route("/")]
 public class WalletsController : ControllerBase
 {
     private readonly IWalletService _walletService;

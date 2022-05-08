@@ -2,7 +2,6 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Amazon.DynamoDBv2.DataModel;
-using DexWallet.Common.Attributes;
 using DexWallet.Identity.Contracts;
 using DexWallet.Identity.Entities.Models;
 using Microsoft.Extensions.Options;
@@ -22,7 +21,7 @@ public class JwtUtilities : IJwtUtilities
     }
 
     /// <summary>
-    ///     Generate JWT Token that is valid for 15 minutes.
+    ///     Generate JWT Token that is valid for 1 day.
     /// </summary>
     /// <param name="user">User instance.</param>
     /// <returns>Generated JWT token as a string.</returns>
@@ -33,7 +32,7 @@ public class JwtUtilities : IJwtUtilities
         var tokenDescriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity(new[] { new Claim("username", user.Username) }),
-            Expires = DateTime.UtcNow.AddMinutes(15),
+            Expires = DateTime.UtcNow.AddDays(1),
             SigningCredentials =
                 new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };

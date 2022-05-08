@@ -1,18 +1,23 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using DexWallet.Common.Entities.DTOs;
+using DexWallet.Common.Helpers;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace DexWallet.Common.Clients;
 
-public class WalletServiceClient
+public class CoreServiceClient
 {
     private readonly HttpClient _httpClient;
 
-    public WalletServiceClient(HttpClient httpClient)
+    public CoreServiceClient(HttpClient httpClient, IOptions<CommonAppSettings> appSettings)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("https://localhost:7072");
+
+        if (string.IsNullOrEmpty(appSettings.Value.CoreServiceUrl))
+            throw new InvalidOperationException("Invalid Core service URI");
+        _httpClient.BaseAddress = new Uri(appSettings.Value.CoreServiceUrl);
         _httpClient.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
     }
 

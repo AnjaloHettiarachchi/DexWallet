@@ -7,7 +7,7 @@ namespace DexWallet.Exchange.Controllers;
 
 [Authorize]
 [ApiController]
-[Route("/exchange")]
+[Route("/")]
 public class ExchangesController : ControllerBase
 {
     private readonly IExchangeService _exchangeService;

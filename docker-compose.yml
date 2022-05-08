@@ -1,0 +1,36 @@
+version: '3.4'
+services:
+  identity:
+    build:
+      context: .
+      dockerfile: Identity.Dockerfile
+    image: dex-wallet.identity:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT= ${ASPNETCORE_ENVIRONMENT}
+      - AppSettings:SigningKey= ${SIGNING_KEY}
+      - AppSettings:RefreshTokenTTL= ${REFRESH_TOKEN_TTL}
+    ports:
+      - "8080:80"
+  
+  core:
+    build:
+      context: .
+      dockerfile: Core.Dockerfile
+    image: dex-wallet.core:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT= ${ASPNETCORE_ENVIRONMENT}
+      - AppSettings:IdentityServiceUrl= ${IDENTITY_SERVICE_URL}
+    ports:
+      - "8081:80"
+
+  exchange:
+    build:
+      context: .
+      dockerfile: Exchange.Dockerfile
+    image: dex-wallet.exchange:latest
+    environment:
+      - ASPNETCORE_ENVIRONMENT= ${ASPNETCORE_ENVIRONMENT}
+      - AppSettings:IdentityServiceUrl= ${IDENTITY_SERVICE_URL}
+      - AppSettings:CoreServiceUrl= ${CORE_SERVICE_URL}
+    ports:
+      - "8082:80"

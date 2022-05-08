@@ -8,20 +8,20 @@ namespace DexWallet.Exchange.Services;
 
 public class ExchangeService : IExchangeService
 {
+    private readonly CoreServiceClient _coreServiceClient;
     private readonly IDynamoDBContext _dbContext;
     private readonly IRateService _rateService;
-    private readonly WalletServiceClient _walletServiceClient;
 
-    public ExchangeService(WalletServiceClient walletServiceClient, IRateService rateService, IDynamoDBContext dbContext)
+    public ExchangeService(CoreServiceClient coreServiceClient, IRateService rateService, IDynamoDBContext dbContext)
     {
-        _walletServiceClient = walletServiceClient;
+        _coreServiceClient = coreServiceClient;
         _rateService = rateService;
         _dbContext = dbContext;
     }
 
     public async Task<Wallet> DoExchange(string authToken, string walletAddress, string fromType, decimal amount)
     {
-        var walletByAddressResponse = await _walletServiceClient.GetWalletByAddressAsync(authToken, walletAddress);
+        var walletByAddressResponse = await _coreServiceClient.GetWalletByAddressAsync(authToken, walletAddress);
 
         if (walletByAddressResponse is null or { IsSuccess: false } or { Result: null })
             throw new AppException("Invalid wallet address");

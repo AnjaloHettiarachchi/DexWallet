@@ -1,0 +1,55 @@
+version: '2'
+networks:
+  credentials_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: "169.254.170.0/24"
+          gateway: 169.254.170.1
+
+services:
+  # This container vends credentials to your containers
+  ecs-local-endpoints:
+    # The Amazon ECS Local Container Endpoints Docker Image
+    image: amazon/amazon-ecs-local-container-endpoints
+    volumes:
+      - /var/run:/var/run
+      - $HOME/.aws/:/home/.aws/
+    environment:
+      HOME: "/home"
+      AWS_PROFILE: "development"
+    networks:
+      credentials_network:
+        ipv4_address: "169.254.170.2"
+        aliases:
+          - endpoints # settings for the containers which you are testing
+  
+  identity:
+    depends_on:
+      - ecs-local-endpoints
+    networks:
+      credentials_network:
+        ipv4_address: "169.254.170.3"
+    environment:
+      AWS_DEFAULT_REGION: "ap-south-1"
+      AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/creds"
+  
+  core:
+    depends_on:
+      - ecs-local-endpoints
+    networks:
+      credentials_network:
+        ipv4_address: "169.254.170.4"
+    environment:
+      AWS_DEFAULT_REGION: "ap-south-1"
+      AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/creds"
+  
+  exchange:
+    depends_on:
+      - ecs-local-endpoints
+    networks:
+      credentials_network:
+        ipv4_address: "169.254.170.5"
+    environment:
+      AWS_DEFAULT_REGION: "ap-south-1"
+      AWS_CONTAINER_CREDENTIALS_RELATIVE_URI: "/creds"

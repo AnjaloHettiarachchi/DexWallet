@@ -18,4 +18,8 @@
         <ProjectReference Include="..\DexWallet.Core\DexWallet.Core.csproj"/>
     </ItemGroup>
 
+    <PropertyGroup>
+        <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
+    </PropertyGroup>
+
 </Project>

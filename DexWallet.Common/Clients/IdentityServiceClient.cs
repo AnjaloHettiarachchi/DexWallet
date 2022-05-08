@@ -1,6 +1,8 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using DexWallet.Common.Helpers;
 using DexWallet.Common.Models.DTOs;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 
 namespace DexWallet.Common.Clients;
@@ -9,10 +11,13 @@ public class IdentityServiceClient
 {
     private readonly HttpClient _httpClient;
 
-    public IdentityServiceClient(HttpClient httpClient)
+    public IdentityServiceClient(HttpClient httpClient, IOptions<CommonAppSettings> appSettings)
     {
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("https://localhost:7147");
+
+        if (string.IsNullOrEmpty(appSettings.Value.IdentityServiceUrl))
+            throw new InvalidOperationException("Invalid Identity service URI");
+        _httpClient.BaseAddress = new Uri(appSettings.Value.IdentityServiceUrl);
         _httpClient.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
     }
 

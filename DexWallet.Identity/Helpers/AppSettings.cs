@@ -1,4 +1,4 @@
-namespace DexWallet.Common.Attributes;
+namespace DexWallet.Identity.Helpers;
 
 public class AppSettings
 {

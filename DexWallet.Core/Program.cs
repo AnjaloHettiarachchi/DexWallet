@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using DexWallet.Common.Clients;
+using DexWallet.Common.Helpers;
 using DexWallet.Common.Middlewares;
 using DexWallet.Core.Contracts;
 using DexWallet.Core.Services;
@@ -16,6 +17,9 @@ var builder = WebApplication.CreateBuilder(args);
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     services.AddEndpointsApiExplorer();
     services.AddSwaggerGen();
+
+    // Health checks for ECS
+    services.AddHealthChecks();
 
     // JSON default options
     services.AddControllers().AddJsonOptions(
@@ -35,7 +39,7 @@ var builder = WebApplication.CreateBuilder(args);
     services.AddScoped<IDynamoDBContext, DynamoDBContext>();
 
     // Configure strongly typed Configuration object
-    // services.Configure<AppSettings>(builder.Configuration.GetSection("AppSettings"));
+    services.Configure<CommonAppSettings>(builder.Configuration.GetSection("AppSettings"));
 
     // HTTP Client for inter-service communication
     services.AddHttpClient<IdentityServiceClient>();
@@ -48,13 +52,16 @@ var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 {
+    // Health check endpoint
+    app.UseHealthChecks("/health");
+
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI();
     }
 
-    app.UseHttpsRedirection();
+    // app.UseHttpsRedirection();
 
     app.UseMiddleware<ResponseHandlerMiddleware>();
 

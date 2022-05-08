@@ -2,7 +2,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
-using DexWallet.Common.Attributes;
 using DexWallet.Common.Middlewares;
 using DexWallet.Identity.Contracts;
 using DexWallet.Identity.Entities.Models;
@@ -19,6 +18,9 @@ var builder = WebApplication.CreateBuilder(args);
     // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
     services.AddEndpointsApiExplorer();
     services.AddSwaggerGen();
+
+    // Health checks for ECS
+    services.AddHealthChecks();
 
     // JSON default options
     services.AddControllers().AddJsonOptions(
@@ -51,28 +53,32 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var context = scope.ServiceProvider.GetRequiredService<IDynamoDBContext>();
-    var testUser = new User
+
+    var userBatch = context.CreateBatchWrite<User>();
+
+    userBatch.AddPutItems(new List<User>
     {
-        FirstName = "John",
-        LastName = "Doe",
-        Username = "john.doe@example.com",
-        PasswordHash = BCrypt.Net.BCrypt.HashPassword("john123")
-    };
+        new() { FirstName = "John", LastName = "Doe", Username = "john.doe@example.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("john123") },
+        new() { FirstName = "Jane", LastName = "Doe", Username = "jane.doe@example.com", PasswordHash = BCrypt.Net.BCrypt.HashPassword("jane123") }
+    });
 
-    var testUserInDb = context.LoadAsync<User>(testUser.Username).Result;
+    var usersInDb = context.ScanAsync<User>(new List<ScanCondition>()).GetRemainingAsync().Result;
 
-    if (testUserInDb == null) context.SaveAsync(testUser);
+    if (usersInDb.Count == 0) userBatch.ExecuteAsync();
 }
 
 // Configure the HTTP request pipeline.
 {
+    // Health check endpoint
+    app.UseHealthChecks("/health");
+
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
         app.UseSwaggerUI();
     }
 
-    app.UseHttpsRedirection();
+    // app.UseHttpsRedirection();
 
     app.UseMiddleware<ResponseHandlerMiddleware>();
 
